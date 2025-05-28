@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Surpresa Romântica - Animação Interativa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(-45deg, #ff758c, #ff7eb3, #fefcea, #f1c4c4);
+      background-size: 600% 600%;
+      animation: gradientBG 20s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      user-select: none;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .container {
+      background: rgba(0,0,0,0.2);
+      border-radius: 25px;
+      padding: 40px 60px;
+      box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+      position: relative;
+    }
+
+    .instruction {
+      font-size: 1.1rem;
+      color: #ffcee7;
+      margin-bottom: 20px;
+      font-weight: 600;
+      text-shadow: 0 1px 3px rgba(255, 30, 85, 0.7);
+    }
+
+    .heart {
+      width: 140px;
+      height: 120px;
+      margin: 0 auto;
+      cursor: pointer;
+      filter: drop-shadow(0 0 15px #ff4a6e);
+      animation: pulseHeart 2s infinite;
+    }
+    .heart svg {
+      width: 100%;
+      height: 100%;
+      fill: #ff456f;
+      transition: fill 0.3s ease;
+    }
+    .heart:hover {
+      filter: drop-shadow(0 0 30px #ff1e55);
+      animation-duration: 1s;
+    }
+    .heart:hover svg {
+      fill: #ff1e55;
+    }
+    .heart.pressed {
+      animation: heartPop 0.6s forwards;
+      filter: drop-shadow(0 0 40px #ff1e55);
+    }
+
+    @keyframes pulseHeart {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 15px #ff456f);
+      }
+      50% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 30px #ff1e55);
+      }
+    }
+
+    @keyframes heartPop {
+      0% {transform: scale(1);}
+      50% {transform: scale(1.5);}
+      100% {transform: scale(1);}
+    }
+
+    .message {
+      margin-top: 30px;
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.4rem;
+      line-height: 1.3;
+      opacity: 1;
+      text-shadow: 0 2px 8px rgba(255, 30, 85, 0.7);
+      min-height: 3.6em;
+    }
+
+    .particle {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: linear-gradient(45deg, #ff1e55, #ff466e);
+      clip-path: polygon(
+        50% 0%,
+        61% 15%,
+        75% 15%,
+        85% 25%,
+        85% 40%,
+        75% 60%,
+        50% 80%,
+        25% 60%,
+        15% 40%,
+        15% 25%,
+        25% 15%,
+        39% 15%
+      );
+      filter: drop-shadow(0 0 5px #ff1e55);
+      opacity: 0.9;
+      animation: floatUp 3s forwards ease-in;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        opacity: 0.9;
+      }
+      100% {
+        transform: translateY(-180px) scale(0.4) rotate(45deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="instruction">
+      Clique no coração para receber uma surpresa!
+    </div>
+    <div class="heart" id="heart">
+      <svg viewBox="0 0 512 512">
+        <path d="M471.701 73.333c-54.16-46.927-136.813-38.83-186.223 13.1l-20.271 21.23-20.271-21.23c-49.41-51.93-132.064-60.027-186.223-13.1-62.986 54.565-66.567 149.568-10.616 207.868L239.963 470.8c9.4 9.658 24.858 9.658 34.259 0l185.687-189.598c55.949-58.3 52.37-153.303-10.188-207.869z"/>
+      </svg>
+    </div>
+    <div class="message" id="message"></div>
+  </div>
+
+  <audio id="popSound" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+
+  <script>
+    const heart = document.getElementById('heart');
+    const message = document.getElementById('message');
+    const popSound = document.getElementById('popSound');
+
+    const messages = [
+      "Surpresa! Eu te amo bafo de coco. 💖",
+      "Meu coração bate mais forte quando to com você! ❤️",
+      "Voce me deve um fondue! 🌹",
+      "Você colore os meus dias! ☀️",
+      "Com você, tudo é mais feliz. 💫",
+      "Amor é isso: Henrique Ruel de Souza lindo perfeito! 💕",
+      "Seu sorriso é meu presente favorito! 🎁",
+      "Só sei que eu te amo demaaaaais! 💞"
+    ];
+
+    function createParticle() {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+
+      const rect = heart.getBoundingClientRect();
+      const posX = rect.left + (Math.random() * rect.width);
+      const posY = rect.top + (Math.random() * rect.height * 0.5);
+
+      particle.style.left = posX + 'px';
+      particle.style.top = posY + 'px';
+
+      document.body.appendChild(particle);
+
+      particle.addEventListener('animationend', () => {
+        particle.remove();
+      });
+    }
+
+    function showSurprise() {
+      // Troca a mensagem imediatamente
+      const randomIndex = Math.floor(Math.random() * messages.length);
+      message.textContent = messages[randomIndex];
+
+      // Ativa animação
+      heart.classList.remove('pressed');
+      void heart.offsetWidth; // força reinício da animação
+      heart.classList.add('pressed');
+
+      // Som
+      popSound.currentTime = 0;
+      popSound.play();
+
+      // Partículas
+      for (let i = 0; i < 25; i++) {
+        createParticle();
+      }
+    }
+
+    heart.addEventListener('click', showSurprise);
+  </script>
+</body>
+</html>
